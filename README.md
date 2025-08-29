@@ -321,8 +321,8 @@
       historyList.innerHTML = "";
       items.slice(0,5).forEach(it=>{
         const badge = it.Feedback.Risk.level==="HIGH" ? "badge badge-high"
-                   : it.Feedback.Risk.level==="MEDIUM" ? "badge badge-medium"
-                   : it.Feedback.Risk.level==="LOW" ? "badge badge-low" : "badge badge-none";
+                     : it.Feedback.Risk.level==="MEDIUM" ? "badge badge-medium"
+                     : it.Feedback.Risk.level==="LOW" ? "badge badge-low" : "badge badge-none";
         const li = document.createElement("li");
         li.className = "surface p-3";
         li.innerHTML = `
