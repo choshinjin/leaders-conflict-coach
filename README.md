@@ -12,7 +12,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    /* ===== FOUC(깜빡임) 방지: 폰트 로딩 끝날 때까지 숨김 ===== */
+    /* ===== FOUC(깜빡임) 방지 ===== */
     html.no-fouc { visibility: hidden; }
 
     :root{
@@ -40,6 +40,7 @@
     textarea, select{border:1px solid var(--c-border); border-radius:10px; padding:.65rem .85rem;}
     .kv{display:inline-block; padding:.2rem .5rem; border-radius:999px; background:#f1f5f9; color:#334155; font-weight:700; font-size:.78rem;}
     .hint{font-size:.82rem; color:#6b7280;}
+
     /* 케이스 버튼 */
     .grid-cases .case{display:flex; flex-direction:column; gap:.2rem; padding:.8rem; border-radius:12px; background:#fff; border:1px solid var(--c-border); transition:box-shadow .18s, transform .08s, border-color .18s;}
     .grid-cases .case:hover{box-shadow:var(--shadow);}
@@ -47,7 +48,7 @@
     .grid-cases .case .state-dot{width:8px; height:8px; border-radius:999px; background:#e5e7eb; display:inline-block;}
     .grid-cases .case.case--active .state-dot{ background:#3b82f6; }
 
-    /* 차트: 컴팩트/안정적(높이 고정) */
+    /* 차트: 컴팩트/안정적 */
     .chart-wrap{height:160px; position:relative;}
     .chart-wrap canvas{position:absolute; inset:0; width:100% !important; height:100% !important;}
     .chart-card{padding:10px !important;}
@@ -159,7 +160,7 @@
       </div>
     </section>
 
-    <!-- ===== 하단: 학습 대시보드(전체폭) + 히스토리/HR 가이드 ===== -->
+    <!-- ===== 하단: 학습 대시보드 + 히스토리/HR 가이드 ===== -->
     <section class="space-y-4">
       <div class="surface p-4">
         <h3 class="text-primary font-bold">학습 대시보드</h3>
@@ -196,10 +197,12 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    /* ===== FOUC 해제: 폰트 준비 후 표시 ===== */
+    /* ===== FOUC 해제: 폰트 준비 + 타임아웃 백업 ===== */
     document.addEventListener('DOMContentLoaded', async () => {
+      const unhide = ()=> document.documentElement.classList.remove('no-fouc');
+      const t = setTimeout(unhide, 1200); // 폰트 지연 대비
       try { if (document.fonts?.ready) await document.fonts.ready; } catch(e){}
-      requestAnimationFrame(()=> document.documentElement.classList.remove('no-fouc'));
+      clearTimeout(t); requestAnimationFrame(unhide);
     });
 
     /* ===== 시나리오 데이터 ===== */
@@ -244,7 +247,7 @@
       ]
     };
 
-    /* ===== 전역 상태(단일 소스) ===== */
+    /* ===== 전역 상태 ===== */
     const state = {
       currentCase: null,
       riskCounts: { HIGH:0, MEDIUM:0, LOW:0, NONE:0 },
@@ -366,7 +369,7 @@
 
     /* ===== 코칭(폴백) ===== */
     async function callGeminiSafe(prompt){
-      const apiKey = ""; // 필요 시 입력
+      const apiKey = ""; // 필요 시 키 입력
       if(!apiKey) return localCoach();
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
       const payload = {
@@ -430,7 +433,7 @@
           }catch{ toast.textContent="복사 실패"; }
         };
 
-        /* 상태 업데이트 → 차트 갱신 */
+        /* 상태 → 차트 갱신 */
         state.riskCounts[feedback.riskLevel] = (state.riskCounts[feedback.riskLevel]||0) + 1;
         state.caseCounts[state.currentCase] = (state.caseCounts[state.currentCase]||0) + 1;
         initCharts();
@@ -486,11 +489,13 @@
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = `leader-conflict-coach-history-${new Date().toISOString().slice(0,10).replaceAll("-","")}.json`;
+      document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(a.href);
     });
 
-    // 첫 렌더
+    // 최초 렌더
     (function init(){
       renderHistory();
       initCharts();
