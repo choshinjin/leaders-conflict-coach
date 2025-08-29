@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <title>리더 코칭 챗봇 — 리더의 대화, 더 나은 해답으로</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <!-- Google Fonts (깜빡임 최소화: display=swap) -->
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -13,10 +14,11 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    /* 초기 깜빡임 방지: 모든 리소스 로딩 완료 전까지 화면 숨김 */
+    /* 1) 초기 깜빡임 방지: 폰트까지 로드되면 해제 */
     html.no-fouc { visibility: hidden; }
+
     :root{
-      --c-bg:#f6f7fb; --c-surface:#ffffff; --c-primary:#1f2a44; --c-accent:#3b82f6;
+      --c-bg:#f7f8fb; --c-surface:#ffffff; --c-primary:#1f2a44; --c-accent:#3b82f6;
       --c-support:#6b7280; --c-border:#e6e8ef; --c-danger:#b91c1c; --c-warn:#d97706;
       --c-info:#0ea5e9; --shadow:0 10px 24px rgba(15,23,42,.06);
     }
@@ -25,7 +27,8 @@
     .text-primary{color:var(--c-primary);}
     .text-support{color:var(--c-support);}
     .surface{background:var(--c-surface); border:1px solid var(--c-border); border-radius:16px; box-shadow:var(--shadow);}
-    .header{backdrop-filter: blur(8px); background:rgba(255,255,255,.7); border-bottom:1px solid var(--c-border);}
+    /* 깜빡임 요인이 될 수 있는 backdrop-filter 제거(디자인 유지용 얕은 배경) */
+    .header{background:#ffffffcc; border-bottom:1px solid var(--c-border);}
     .btn{padding:.6rem 1rem; border-radius:12px; font-weight:700; letter-spacing:.2px; transition:transform .05s ease, opacity .15s;}
     .btn:active{transform:translateY(1px);}
     .btn-primary{background:var(--c-primary); color:#fff;}
@@ -45,12 +48,12 @@
     .hint{font-size:.85rem; color:#6b7280;}
     .list-dot li{position:relative; padding-left:1rem;}
     .list-dot li::before{content:"•"; position:absolute; left:0; color:var(--c-accent);}
+
     .grid-cases .case{
       display:flex; flex-direction:column; gap:.25rem; padding:1rem; border-radius:14px; background:#fff;
       border:1px solid var(--c-border); transition:box-shadow .18s ease, transform .08s ease, border-color .18s ease;
     }
     .grid-cases .case:hover{box-shadow:var(--shadow);}
-    /* 선택 상태 강조 */
     .grid-cases .case.case--active{
       border-color:#93c5fd;
       box-shadow:0 10px 26px rgba(59,130,246,.15), 0 0 0 3px rgba(59,130,246,.15);
@@ -63,8 +66,9 @@
     .grid-cases .case.case--active .state-dot{ background:#3b82f6; }
     .divider{height:1px; background:var(--c-border);}
 
-    /* 차트 영역 높이를 고정해 초기 레이아웃 점프 방지 */
-    .chart-wrap{min-height:240px; position:relative;}
+    /* 2) 대시보드 간결화: 낮은 높이 + 패딩 축소 */
+    .chart-card{padding:12px !important;}
+    .chart-wrap{height:150px; position:relative;}
     .chart-wrap canvas{position:absolute; inset:0;}
   </style>
 </head>
@@ -72,10 +76,10 @@
 <body class="bg-app">
   <!-- 헤더 -->
   <header class="header sticky top-0 z-20">
-    <div class="mx-auto max-w-7xl px-4 py-4 flex items-center justify-between">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
       <div>
-        <h1 class="text-xl md:text-2xl font-extrabold text-primary">리더 코칭 챗봇 — 리더의 대화, 더 나은 해답으로</h1>
-        <p class="text-sm md:text-base text-support">평가 · 보상 · 승진 · 동료 갈등 · 노무 이슈 면담 시뮬레이션</p>
+        <h1 class="text-lg md:text-2xl font-extrabold text-primary">리더 코칭 챗봇 — 리더의 대화, 더 나은 해답으로</h1>
+        <p class="text-xs md:text-sm text-support">평가 · 보상 · 승진 · 동료 갈등 · 노무 이슈 면담 시뮬레이션</p>
       </div>
       <div class="flex gap-2">
         <button id="resetBtn" type="button" class="btn btn-info">초기화</button>
@@ -84,9 +88,9 @@
     </div>
   </header>
 
-  <main class="mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <main class="mx-auto max-w-7xl px-4 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
     <!-- 좌측 메인 -->
-    <section class="lg:col-span-8 space-y-6">
+    <section class="lg:col-span-8 space-y-5">
       <!-- 케이스 선택 -->
       <div class="grid grid-cols-2 md:grid-cols-5 gap-3 grid-cases" role="tablist" aria-label="케이스 선택">
         <button data-case="평가" class="case" role="tab" aria-pressed="false" type="button">
@@ -127,16 +131,16 @@
       </div>
 
       <!-- 시나리오 카드 -->
-      <div class="surface p-5">
+      <div class="surface p-4">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div class="flex items-center gap-3">
-            <h2 class="card-title text-lg">시나리오</h2>
+            <h2 class="card-title text-base md:text-lg">시나리오</h2>
             <span id="selectedCaseBadge" class="badge badge-case hidden"></span>
           </div>
           <div class="flex items-center gap-3">
             <label class="text-sm flex items-center gap-2">
               <span class="text-support">상황</span>
-              <select id="scenarioType" class="min-w-[280px]">
+              <select id="scenarioType" class="min-w-[260px]">
                 <option value="">케이스를 먼저 선택하세요</option>
               </select>
             </label>
@@ -147,11 +151,11 @@
       </div>
 
       <!-- 리더 답변 입력 -->
-      <div class="surface p-5">
+      <div class="surface p-4">
         <label for="leaderInput" class="block card-title">리더 답변 입력</label>
         <p class="hint mt-1">권장 흐름: <span class="kv">공감</span> → <span class="kv">기준/원칙</span> → <span class="kv">HR 절차 안내</span></p>
         <textarea id="leaderInput" rows="4" class="mt-3 w-full" placeholder="예) 말씀해주셔서 감사합니다. 그렇게 느끼실 수 있습니다. 기준에 따라 확인 후 안내드리겠습니다."></textarea>
-        <div class="mt-4 flex items-center gap-2">
+        <div class="mt-3 flex items-center gap-2">
           <button id="coachBtn" type="button" class="btn btn-primary">코칭 받기</button>
           <button id="copyBestBtn" type="button" class="btn btn-accent hidden">모범 대화 복사</button>
           <span id="toast" class="hint"></span>
@@ -159,47 +163,47 @@
       </div>
 
       <!-- 피드백 -->
-      <div id="feedbackPanel" class="surface p-5 hidden">
+      <div id="feedbackPanel" class="surface p-4 hidden">
         <div class="flex items-center justify-between">
-          <h3 class="card-title text-lg">코칭 피드백</h3>
+          <h3 class="card-title text-base md:text-lg">코칭 피드백</h3>
           <span id="riskBadge" class="badge">RISK</span>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <div class="surface p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+          <div class="surface p-3">
             <div class="card-title">잘한 점</div>
             <p id="fbPositive" class="mt-2"></p>
           </div>
-          <div class="surface p-4">
+          <div class="surface p-3">
             <div class="card-title">보완할 점</div>
             <p id="fbImprovement" class="mt-2"></p>
           </div>
         </div>
 
-        <div class="surface p-4 mt-4">
+        <div class="surface p-3 mt-3">
           <div class="card-title">모범 대화</div>
           <p id="fbBest" class="mt-2"></p>
         </div>
 
-        <div class="surface p-4 mt-4">
+        <div class="surface p-3 mt-3">
           <div class="card-title">다음 학습 제안</div>
           <p id="fbNext" class="mt-2"></p>
         </div>
 
-        <div class="mt-4">
+        <div class="mt-3">
           <button id="hrBtn" type="button" class="btn btn-danger hidden">HR 연결 가이드 확인</button>
         </div>
       </div>
 
-      <!-- 학습 대시보드 -->
-      <div class="surface p-5">
-        <h3 class="card-title text-lg">학습 대시보드</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-          <div class="surface p-4 chart-wrap">
-            <div class="text-support font-semibold mb-2">리스크 분포(도넛)</div>
+      <!-- 학습 대시보드 (간결화) -->
+      <div class="surface p-4">
+        <h3 class="card-title text-base md:text-lg">학습 대시보드</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+          <div class="surface chart-card chart-wrap">
+            <div class="text-support font-semibold mb-1 text-sm">리스크 분포(도넛)</div>
             <canvas id="riskDonut"></canvas>
           </div>
-          <div class="surface p-4 chart-wrap">
-            <div class="text-support font-semibold mb-2">케이스별 시도(막대)</div>
+          <div class="surface chart-card chart-wrap">
+            <div class="text-support font-semibold mb-1 text-sm">케이스별 시도(막대)</div>
             <canvas id="caseBar"></canvas>
           </div>
         </div>
@@ -207,9 +211,9 @@
     </section>
 
     <!-- 우측 사이드 -->
-    <aside class="lg:col-span-4 space-y-6">
-      <div class="surface p-5">
-        <h3 class="card-title text-lg">HR 퀵가이드</h3>
+    <aside class="lg:col-span-4 space-y-5">
+      <div class="surface p-4">
+        <h3 class="card-title text-base md:text-lg">HR 퀵가이드</h3>
         <ul class="list-dot mt-3 space-y-2">
           <li><b>이의제기:</b> 공식 절차·기한·서류 안내 후 HR 경로 접수</li>
           <li><b>갈등조정:</b> 당사자 분리 → 사실확인 → 중립적 조정 → 후속관리</li>
@@ -217,8 +221,8 @@
         </ul>
       </div>
 
-      <div class="surface p-5">
-        <h3 class="card-title text-lg">리스크 배지</h3>
+      <div class="surface p-4">
+        <h3 class="card-title text-base md:text-lg">리스크 배지</h3>
         <div class="mt-3 flex flex-wrap gap-2">
           <span class="badge badge-high">HIGH</span>
           <span class="badge badge-medium">MEDIUM</span>
@@ -227,8 +231,8 @@
         </div>
       </div>
 
-      <div class="surface p-5">
-        <h3 class="card-title text-lg">히스토리 (최근 10건)</h3>
+      <div class="surface p-4">
+        <h3 class="card-title text-base md:text-lg">히스토리 (최근 5건)</h3>
         <ul id="historyList" class="mt-3 space-y-3 text-support"></ul>
       </div>
 
@@ -240,12 +244,17 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
-    // 모든 리소스 로딩 완료 후 화면 표시(FOUC 방지)
-    window.addEventListener('load', () => {
+    // 1) 폰트까지 로딩된 뒤 화면 표시 (FOUC 줄이기)
+    (async () => {
+      try {
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready;
+        }
+      } catch(e) { /* 일부 브라우저 미지원 시 무시 */ }
       document.documentElement.classList.remove('no-fouc');
-    });
+    })();
 
-    /* =========== 1) 시나리오 =========== */
+    /* =========== 시나리오 =========== */
     const scenarios = {
       "평가": [
         {key:"객관기준요청", text:"직원: 이번 평가 결과가 납득되지 않습니다. 구체적인 기준과 근거를 설명해 주세요."},
@@ -287,7 +296,7 @@
       ]
     };
 
-    /* =========== 2) 상태/DOM =========== */
+    /* =========== 상태/DOM =========== */
     let currentCase = null;
     const scenarioType = document.getElementById("scenarioType");
     const scenarioText = document.getElementById("scenarioText");
@@ -305,7 +314,7 @@
     const hrBtn = document.getElementById("hrBtn");
     const historyList = document.getElementById("historyList");
 
-    /* =========== 3) 차트/히스토리 =========== */
+    /* =========== 차트/히스토리 =========== */
     let riskChart, caseChart;
     const riskCounts = { HIGH:0, MEDIUM:0, LOW:0, NONE:0 };
     const caseCounts = { "평가":0, "보상":0, "승진":0, "갈등":0, "노무":0 };
@@ -326,30 +335,41 @@
             borderWidth: 0
           }]
         },
-        options: { plugins:{ legend:{ labels:{ font:{family:'Noto Sans KR'} } } } }
+        options: {
+          maintainAspectRatio: true,
+          aspectRatio: 2.2,         // 더 납작하게
+          layout: { padding: 4 },
+          plugins:{ legend:{ position:'bottom', labels:{ boxWidth:12, font:{family:'Noto Sans KR', size:11} } } }
+        }
       });
 
       caseChart = new Chart(barCtx, {
         type: "bar",
         data: {
           labels: Object.keys(caseCounts),
-          datasets: [{ label:"시도 횟수", data:Object.values(caseCounts), backgroundColor:"#1f2a44" }]
+          datasets: [{ label:"시도", data:Object.values(caseCounts), backgroundColor:"#1f2a44", borderWidth:0 }]
         },
         options: {
-          plugins:{ legend:{ labels:{ font:{family:'Noto Sans KR'} } } },
-          scales:{ x:{ ticks:{ font:{family:'Noto Sans KR'} } }, y:{ beginAtZero:true, ticks:{ font:{family:'Noto Sans KR'} } } }
+          maintainAspectRatio: true,
+          aspectRatio: 2.2,
+          layout: { padding: 4 },
+          plugins:{ legend:{ display:false } },
+          scales:{
+            x:{ ticks:{ font:{family:'Noto Sans KR', size:11} }, grid:{ display:false } },
+            y:{ beginAtZero:true, ticks:{ stepSize:1, font:{family:'Noto Sans KR', size:11} }, grid:{ color:'#eef2f7' } }
+          }
         }
       });
     }
 
-    const STORAGE_KEY = "lcc_history_v2";
+    const STORAGE_KEY = "lcc_history_v3";
     function loadHistory(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }catch(e){ return []; } }
     function saveHistory(items){ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
-    function pushHistory(entry){ const arr = loadHistory(); arr.unshift(entry); saveHistory(arr.slice(0,50)); }
+    function pushHistory(entry){ const arr = loadHistory(); arr.unshift(entry); saveHistory(arr.slice(0,30)); }
     function renderHistory(){
       const items = loadHistory();
       historyList.innerHTML = "";
-      items.slice(0,10).forEach(it=>{
+      items.slice(0,5).forEach(it=>{
         const badge = it.Feedback.Risk.level==="HIGH" ? "badge badge-high"
                    : it.Feedback.Risk.level==="MEDIUM" ? "badge badge-medium"
                    : it.Feedback.Risk.level==="LOW" ? "badge badge-low" : "badge badge-none";
@@ -360,13 +380,13 @@
             <div class="font-semibold text-primary">${it.case} · ${it.scenarioKey}</div>
             <span class="${badge}">${it.Feedback.Risk.level}</span>
           </div>
-          <div class="mt-1 text-support text-sm">${it.UserInput}</div>
+          <div class="mt-1 text-support text-sm line-clamp-2">${it.UserInput}</div>
         `;
         historyList.appendChild(li);
       });
     }
 
-    /* =========== 4) 상호작용 + Active State =========== */
+    /* =========== 상호작용 + Active State =========== */
     const caseButtons = Array.from(document.querySelectorAll(".grid-cases .case"));
 
     function setActiveCaseButton(btn){
@@ -422,9 +442,9 @@
            : level==="LOW" ? "badge badge-low" : "badge badge-none";
     }
 
-    /* =========== 5) 안전한 코칭 생성 (Gemini 없으면 로컬 폴백) =========== */
+    /* =========== 안전 코칭 (Gemini 없으면 폴백) =========== */
     async function callGeminiSafe(prompt){
-      const apiKey = ""; // 필요 시 여기에 키 입력. 없으면 로컬 규칙 기반 폴백 사용.
+      const apiKey = ""; // 필요 시 API Key 입력. 없으면 폴백.
       if(!apiKey){ return localCoach(prompt); }
 
       const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
@@ -454,13 +474,12 @@
         const txt = json?.candidates?.[0]?.content?.parts?.[0]?.text;
         return JSON.parse(txt);
       }catch(e){
-        console.warn("Gemini 호출 실패, 로컬 폴백 사용:", e);
+        console.warn("Gemini 호출 실패 → 로컬 폴백 사용:", e);
         return localCoach(prompt);
       }
     }
 
-    // 로컬 규칙 기반 코칭(오프라인/키 없음/에러 시)
-    function localCoach(prompt){
+    function localCoach(){
       const t = leaderInput.value.trim() + " " + scenarioText.textContent.trim();
       const hasEmp = /감사|공감|이해|그럴 수|경청/.test(t);
       const badTone = /너|네가|당연히|원래|말이 안돼|무조건/.test(t);
@@ -470,8 +489,9 @@
       const positive = hasEmp ? "공감 표현과 경청으로 신뢰 형성이 잘 되었습니다." : "첫 응답을 시도하신 점은 좋습니다. 공감 문장을 먼저 제시하면 더 효과적입니다.";
       const improvement = badTone ? "단정적·감정적 표현을 줄이고 객관 기준과 절차 중심으로 설명하세요." : "근거(기록·지표) 제시와 HR 절차(이의제기/조정) 안내를 병행하세요.";
       const bestPractice = "말씀해 주셔서 감사합니다. 그렇게 느끼실 수 있습니다. 사전에 공지된 기준과 기록을 근거로 사실관계를 확인해 드리겠습니다. 필요한 경우 HR 절차(이의제기/조정)도 안내하겠습니다.";
-      const riskNotes = risk==="HIGH" ? "고위험 키워드 감지: 즉시 HR 경로로 연결 필요" :
-                        risk==="MEDIUM" ? "중위험: 신중한 표현·절차 병행 권장" : "즉시 리스크 낮음: 기록·후속 점검 권장";
+      const riskNotes = risk==="HIGH" ? "고위험 키워드 감지: 즉시 HR 경로로 연결 필요"
+                        : risk==="MEDIUM" ? "중위험: 신중한 표현·절차 병행 권장"
+                        : "낮은 리스크: 기록 유지 및 후속 점검 권장";
       const nextStep = "같은 케이스의 다른 상황을 연습하거나 모범 문장을 자신의 말로 재구성해 보세요.";
 
       return {positive, improvement, riskLevel:risk, riskNotes, bestPractice, nextStep};
@@ -485,17 +505,11 @@
       const input = leaderInput.value.trim();
       if(!input){ toast.textContent="답변을 입력하세요."; return; }
 
-      // 로딩 상태
       coachBtn.disabled = true;
       coachBtn.textContent = "코칭 중...";
       toast.textContent = "피드백을 생성 중입니다...";
 
-      const userPrompt = `
-        시나리오: "${scenario}"
-        리더 답변: "${input}"
-        위 대화에 대해 HR 코칭 피드백을 JSON으로 반환.
-      `;
-
+      const userPrompt = `시나리오: "${scenario}"\n리더 답변: "${input}"\nHR 코칭 피드백 JSON으로 반환.`;
       try{
         const feedback = await callGeminiSafe(userPrompt);
 
@@ -519,7 +533,7 @@
               ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
             }
             toast.textContent="모범 대화가 복사되었습니다.";
-          }catch{ toast.textContent="복사에 실패했습니다. 수동으로 복사하세요."; }
+          }catch{ toast.textContent="복사에 실패했습니다. 수동 복사해주세요."; }
           setTimeout(()=>toast.textContent="",1500);
         };
 
@@ -546,20 +560,18 @@
       }finally{
         coachBtn.disabled = false;
         coachBtn.textContent = "코칭 받기";
-        if(!toast.textContent.includes("실패")) setTimeout(()=>toast.textContent="",2000);
+        if(!toast.textContent.includes("실패")) setTimeout(()=>toast.textContent="",1800);
       }
     });
 
-    // HR 가이드 버튼(간단 모달)
+    // HR 가이드(간단 모달)
     document.getElementById("hrBtn").addEventListener("click", ()=>{
       const modal = document.createElement("div");
       modal.className = "fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50";
       modal.innerHTML = `
         <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-auto text-center">
           <h4 class="font-bold text-lg mb-3">HR 연결 가이드</h4>
-          <p class="text-gray-700 text-sm">
-            즉시 HR에 사실관계 보고 → 공식 절차(이의제기/조사) 안내 → 문서화/기록 유지 → 2차 피해 방지 조치
-          </p>
+          <p class="text-gray-700 text-sm">즉시 HR에 사실관계 보고 → 공식 절차(이의제기/조사) 안내 → 문서화/기록 유지 → 2차 피해 방지 조치</p>
           <button id="closeModal" type="button" class="btn btn-primary mt-4">확인</button>
         </div>`;
       document.body.appendChild(modal);
